@@ -1,16 +1,25 @@
 import * as cdk from 'aws-cdk-lib';
+import {LambdaRestApi} from 'aws-cdk-lib/aws-apigateway';
+import {FunctionUrlAuthType, Runtime} from 'aws-cdk-lib/aws-lambda';
+import {NodejsFunction} from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class AwsLambdaHonoCdkStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    const fn = new NodejsFunction(this, 'honoCdk', {
+      entry: './lib/lambda/index.ts',
+      handler: 'handler',
+      runtime: Runtime.NODEJS_20_X
+    })
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'AwsLambdaHonoCdkQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    fn.addFunctionUrl({
+      authType: FunctionUrlAuthType.NONE,
+    })
+
+    new LambdaRestApi(this, 'honoCdkApi', {
+      handler: fn
+    })
   }
 }
